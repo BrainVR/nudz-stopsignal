@@ -12,7 +12,8 @@ preprocess_experiment <- function(df_experiment){
            correct_key = ifelse(values.response == values.stimulus, "correct", "error"),
            correct_key = ifelse(values.response == 0, NA, correct_key),
            trialcode = recode(trialcode, sstrial = "stop", nstrial="nostop"),
-           stopsignalstart = expressions.ssrt) %>%
+           stopsignalstart = expressions.ssrt,
+           values.blocknumber = as.character(values.blocknumber)) %>%
     select(-starts_with("expressions"))
 
   dat <- select(dat, -c(values.ns_ntotal, values.ss_ntotal, values.ssd))

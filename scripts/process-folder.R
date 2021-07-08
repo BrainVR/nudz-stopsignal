@@ -1,5 +1,7 @@
 # load libraries
-DATA_PATH <- "C:\\Users\\hejtm\\Downloads\\RAW_DATA_final\\StopSignalTask_Inq/stopsignal5/"
+library(dplyr)
+library(tidyr)
+DATA_PATH <- "C:\\Users\\hejtm\\Downloads\\RAW_DATA_final\\StopSignalTask_Inq/stopsignal4/"
 
 pths <- list.files(DATA_PATH, full.names = TRUE)
 df_out <- data.frame()
