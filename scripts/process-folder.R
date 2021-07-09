@@ -13,7 +13,7 @@ for(filepath in pths){
     next
   }
   df_experiment <- preprocess_experiment(df_experiment)
-  temp_out <- prepare_export(df_experiment)
+  temp_out <- prepare_export(df_experiment, blocks_to_analyze = 0:2)
   df_out <- rbind(df_out, temp_out)
 }
 

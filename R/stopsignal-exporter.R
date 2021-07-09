@@ -6,28 +6,32 @@
 #' @export
 #'
 #' @examples
-prepare_export <- function(df_experiment){
-  df_all_combinations <- data.frame(values.blocknumber = as.character(c(1,1,1,1,2,2,2,2,3,3,3,3)),
-                                    correct_response = rep(c("error", "correct", "error", "correct"), 3),
-                                    trialcode = rep(c("stop", "stop", "nostop", "nostop"), 3))
+prepare_export <- function(df_experiment, blocks_to_analyze = c(1,2,3)){
+
+  blocknumbers <- unlist(lapply(blocks_to_analyze, function(x){rep(x, 4)}))
+  df_all_combinations <- data.frame(blocknumber = as.character(blocknumbers),
+                                    correct_response = rep(c("error", "correct", "error", "correct"),
+                                                           length(blocks_to_analyze)),
+                                    trialcode = rep(c("stop", "stop", "nostop", "nostop"),
+                                                    length(blocks_to_analyze)))
 
   df_out <- df_experiment %>%
-    filter(blockcode == "testblock") %>%
-    group_by(values.blocknumber, trialcode, correct_response) %>%
-    summarise(mean_rt = mean(values.rt),
-              median_rt = median(values.rt),
+    filter(blocknumber %in% blocks_to_analyze) %>%
+    group_by(blocknumber, trialcode, correct_response) %>%
+    summarise(mean_rt = mean(values.rt, na.rm = TRUE),
+              median_rt = median(values.rt, na.rm = TRUE),
               .groups = "drop") %>%
     right_join(df_all_combinations, by=colnames(df_all_combinations)) %>%
     filter(!(trialcode == "stop" & correct_response == "correct")) %>%
-    unite(col = "varname", trialcode, correct_response, values.blocknumber, sep = "_")
+    unite(col = "varname", trialcode, correct_response, blocknumber, sep = "_")
 
   df_out <- df_experiment %>%
-    filter(blockcode == "testblock") %>%
-    group_by(values.blocknumber, trialcode) %>%
+    filter(blocknumber %in% blocks_to_analyze) %>%
+    group_by(blocknumber, trialcode) %>%
     summarise(accuracy = sum(correct_response == "correct")/n(),
               .groups="drop") %>%
-    mutate(varname = paste(trialcode, "correct", values.blocknumber, sep="_")) %>%
-    select(-c(values.blocknumber,  trialcode)) %>%
+    mutate(varname = paste(trialcode, "correct", blocknumber, sep="_")) %>%
+    select(-c(blocknumber,  trialcode)) %>%
     full_join(df_out, by="varname")
 
   df_out <- df_out %>%

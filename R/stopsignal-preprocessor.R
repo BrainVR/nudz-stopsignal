@@ -11,22 +11,17 @@ preprocess_experiment <- function(df_experiment){
     df_experiment$trialcode <- ifelse(df_experiment$values.signal == 1,
                                       "sstrial", "nstrial")
   }
-
-  if(!("values.blocknumber" %in% colnames(df_experiment))){
-    df_experiment$values.blocknumber <- df_experiment$expressions.blocknumber
-  }
-
   if(!("blockcode" %in% colnames(df_experiment))){
     warning("BLOCKCODE not found. Assuming ALL TRIALS ARE TEST!")
     df_experiment$blockcode <- "testblock"
   }
   dat <- df_experiment %>%
-    mutate(correct_response = ifelse(values.correct == 2, "correct", "error"),
+    mutate(blocknumber = as.character(expressions.blocknumber),
+           correct_response = ifelse(values.correct == 2, "correct", "error"),
            correct_key = ifelse(values.response == values.stimulus, "correct", "error"),
            correct_key = ifelse(values.response == 0, NA, correct_key),
            trialcode = recode(trialcode, sstrial = "stop", nstrial="nostop"),
-           stopsignalstart = expressions.ssrt,
-           values.blocknumber = as.character(values.blocknumber)) %>%
+           stopsignalstart = expressions.ssrt) %>%
     select(-starts_with("expressions"))
 
   # The any of is there as some datasets do NOT have these columns
