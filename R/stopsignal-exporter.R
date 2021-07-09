@@ -14,9 +14,8 @@ prepare_export <- function(df_experiment, blocks_to_analyze = c(1,2,3)){
                                                            length(blocks_to_analyze)),
                                     trialcode = rep(c("stop", "stop", "nostop", "nostop"),
                                                     length(blocks_to_analyze)))
-
+  df_experiment <- filter(df_experiment, blocknumber %in% blocks_to_analyze)
   df_out <- df_experiment %>%
-    filter(blocknumber %in% blocks_to_analyze) %>%
     group_by(blocknumber, trialcode, correct_response) %>%
     summarise(mean_rt = mean(values.rt, na.rm = TRUE),
               median_rt = median(values.rt, na.rm = TRUE),
@@ -26,7 +25,6 @@ prepare_export <- function(df_experiment, blocks_to_analyze = c(1,2,3)){
     unite(col = "varname", trialcode, correct_response, blocknumber, sep = "_")
 
   df_out <- df_experiment %>%
-    filter(blocknumber %in% blocks_to_analyze) %>%
     group_by(blocknumber, trialcode) %>%
     summarise(accuracy = sum(correct_response == "correct")/n(),
               .groups="drop") %>%
@@ -34,11 +32,31 @@ prepare_export <- function(df_experiment, blocks_to_analyze = c(1,2,3)){
     select(-c(blocknumber,  trialcode)) %>%
     full_join(df_out, by="varname")
 
+  df_all <- df_experiment %>%
+    group_by(trialcode, correct_response) %>%
+    summarise(mean_rt = mean(values.rt, na.rm = TRUE),
+              median_rt = median(values.rt, na.rm = TRUE),
+              .groups = "drop") %>%
+    mutate(varname=paste(trialcode, correct_response, paste0(blocks_to_analyze, collapse=""), sep="_")) %>%
+    select(mean_rt, median_rt, varname)  %>%
+    pivot_wider(names_from = varname, values_from = c(mean_rt, median_rt))
+
+  df_all_accuracy <- df_experiment %>%
+    group_by(trialcode) %>%
+    summarise(accuracy = sum(correct_response == "correct")/n(),
+              .groups="drop") %>%
+    mutate(varname=paste("accuracy", trialcode, paste0(blocks_to_analyze, collapse=""), sep="_")) %>%
+    select(varname, accuracy) %>%
+    pivot_wider(names_from = varname, values_from = accuracy)
+
+  df_all <- cbind(df_all, df_all_accuracy)
+
   df_out <- df_out %>%
     pivot_wider(names_from = varname, values_from = c(accuracy, mean_rt, median_rt)) %>%
-  #%>% select(matches)
     select(-matches("accuracy.*error.*"), -matches(".*_rt_stop")) %>%
-    mutate(participant = df_experiment$subject[1])
+    mutate(participant = as.character(df_experiment$subject[1]))
+
+  df_out <- cbind(df_all, df_out)
 
   return(df_out)
 }

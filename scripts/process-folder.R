@@ -14,7 +14,7 @@ for(filepath in pths){
   }
   df_experiment <- preprocess_experiment(df_experiment)
   temp_out <- prepare_export(df_experiment, blocks_to_analyze = 0:2)
-  df_out <- rbind(df_out, temp_out)
+  df_out <- bind_rows(df_out, temp_out)
 }
 
 write.csv(df_out, "stopsignal-preprocessed-stopsignal4.csv",
