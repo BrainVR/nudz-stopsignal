@@ -17,5 +17,6 @@ for(filepath in pths){
   df_out <- rbind(df_out, temp_out)
 }
 
-write.csv(df_out, "stopsignal-preprocessed.csv", row.names = FALSE, quote = FALSE)
+write.csv(df_out, "stopsignal-preprocessed-stopsignal4.csv",
+          row.names = FALSE, quote = FALSE)
 

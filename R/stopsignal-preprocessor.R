@@ -7,6 +7,19 @@
 #'
 #' @examples
 preprocess_experiment <- function(df_experiment){
+  if(!("trialcode" %in% colnames(df_experiment))){
+    df_experiment$trialcode <- ifelse(df_experiment$values.signal == 1,
+                                      "sstrial", "nstrial")
+  }
+
+  if(!("values.blocknumber" %in% colnames(df_experiment))){
+    df_experiment$values.blocknumber <- df_experiment$expressions.blocknumber
+  }
+
+  if(!("blockcode" %in% colnames(df_experiment))){
+    warning("BLOCKCODE not found. Assuming ALL TRIALS ARE TEST!")
+    df_experiment$blockcode <- "testblock"
+  }
   dat <- df_experiment %>%
     mutate(correct_response = ifelse(values.correct == 2, "correct", "error"),
            correct_key = ifelse(values.response == values.stimulus, "correct", "error"),
@@ -16,7 +29,8 @@ preprocess_experiment <- function(df_experiment){
            values.blocknumber = as.character(values.blocknumber)) %>%
     select(-starts_with("expressions"))
 
-  dat <- select(dat, -c(values.ns_ntotal, values.ss_ntotal, values.ssd))
+  # The any of is there as some datasets do NOT have these columns
+  dat <- select(dat, -any_of(c("values.ns_ntotal", "values.ss_ntotal", "values.ssd")))
   return(dat)
 }
 
@@ -30,9 +44,7 @@ preprocess_experiment <- function(df_experiment){
 #' @examples
 extract_settings <- function(df_experiment){
   settings_fields <- c("build", "computer.platform", "date", "time", "subject", "group")
-  settings <- sapply(settings_fields, function(x){return(dat[[x]][1])},
-                     simplify = TRUE)
+  settings <- sapply(settings_fields, function(x){return(dat[[x]][1])}, simplify = TRUE)
   dat <- select(df_experiment, -settings_fields)
-
   return(list(settings = settings, data = dat))
 }

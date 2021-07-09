@@ -17,7 +17,7 @@ prepare_export <- function(df_experiment){
     summarise(mean_rt = mean(values.rt),
               median_rt = median(values.rt),
               .groups = "drop") %>%
-    right_join(df_all_combinations) %>%
+    right_join(df_all_combinations, by=colnames(df_all_combinations)) %>%
     filter(!(trialcode == "stop" & correct_response == "correct")) %>%
     unite(col = "varname", trialcode, correct_response, values.blocknumber, sep = "_")
 
