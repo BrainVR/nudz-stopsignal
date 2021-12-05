@@ -1,6 +1,7 @@
 library(dplyr)
 library(tidyr)
 
+
 dat <- read.table("data/iq/stopsignaltask5_CZ_raw_zk210612kt_2021-06-12-17-04-00-099.iqdat",
            header=TRUE, sep="\t")
 
@@ -26,6 +27,7 @@ df_out <- dat %>%
   summarise(mean_rt = mean(values.rt),
             median_rt = median(values.rt),
             .groups = "drop") %>%
+  # removing reaction times of trials where no realctions were given - correct stop signal trials
   filter(!(trialcode == "stop" & correct_response == "correct")) %>%
   unite(col = "varname", trialcode, correct_response, values.blocknumber, sep = "_")
 
